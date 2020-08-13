@@ -60,7 +60,7 @@
                 <div class="col">
                    <br>
                    <br>
-                    <p>Name:<span id = "current_name"></span> </p>
+                    <p>Name:<span id = "name"></span> </p>
                     <p>Email: <span id = "email"></span></p>
                     <p>: </p>
                     <button onclick="signout()">sign out</button>
@@ -115,15 +115,15 @@
         <div class="tab-pane container" id="ranking">
           <table>
             <col width="15%"><col width="60%"><col width="15%"><col width = "10%">
-            <thead class="highlight-cell"><th>position</th><th>name</th><th>college</th><th>points</th></thead>
+            <thead class="highlight-cell"><th>
+              
+            </th><th>Description</th><th>Resolved?</th><th>Delete</th></thead>
             <tbody id="list-table-body"></tbody>
         
             <tfoot class="empty-cell">
               <td>
               </td>
               <td>
-              </td>
-              <td></td>
               </td>
               <td></td>
             </tfoot>
@@ -146,41 +146,16 @@
       firebase.auth().onAuthStateChanged(function(user){
           if(user){
               console.log(user);
-              var current_name = document.getElementById("current_name")
+              var name = document.getElementById("name")
               var email = document.getElementById("email")
               var photo = document.getElementById("photo")
-              current_name.innerHTML = user.displayName;
+              name.innerHTML = user.displayName;
               email.innerHTML = user.email;
               photo.src = user.photoURL;
               
               var db = firebase.firestore().collection('users');
+              
 
-              db.orderBy("points","desc")
-              .get()
-              .then(function(querySnapshot) {
-                  const listTableBody = document.getElementById("list-table-body");
-
-                  // clear all the table rows first
-                  listTableBody.textContent = "";
-                  var position = 0;
-
-                  querySnapshot.forEach(function(doc) {
-                      // doc.data() is never undefined for query doc snapshots
-                      position = position + 1;
-                      user_pos= doc.data();
-                      console.log(user_pos.name);
-                      var row = document.createElement("tr");
-                      row.innerHTML = "<td>" + position + "</td><td>" + user_pos.name + "</td><td>" +
-                      user_pos.college
-                      + "</td>" + user_pos.points
-                      "<td></td>";
-
-                      listTableBody.append(row);
-                  });
-              })
-              .catch(function(error) {
-                  console.log("Error getting documents: ", error);
-              });
 
 
           }
