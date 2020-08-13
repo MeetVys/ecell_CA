@@ -40,6 +40,7 @@
 	<script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-analytics.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-firestore.js"></script>
 
 	<script>
   	// Your web app's Firebase configuration
@@ -94,7 +95,7 @@
 				<ul class="main-nav nav navbar-nav navbar-right">
 					<li><a href="#home">Home</a></li>
 					<li><a href="#about">About Us</a></li>
-					<li><a href="#whyca">Why CA</a></li>
+					<li><a href="index_dashboard.html">Dashboard</a></li>
 					<li><a href="#responsibilities">Responsibilities</a></li>
 					<li><a href="#faq">FAQ</a></li>
 					<li><a href="#terms">Terms</a></li>
@@ -657,35 +658,48 @@
 </body>
 <script>
 	console.log("hi");
+	var signin = false;
 	function signinwithgoogle(){
+		signin = true;
 		console.log("heyhey");
 		var provider = new firebase.auth.GoogleAuthProvider();
+		firebase.auth().signInWithRedirect(provider);
+		firebase.auth().getRedirectResult().then(function(result) {
+			var user = result.user;
+			console.log("user info", user);
 
-		firebase.auth().signInWithPopup(provider).then(function(result){
-			console.log("success", result)
 		}).catch(function(error){
 		console.log('google sign in error', error);
+		alert('Please Try Again !')
 		});
-	}
 
-	firebase.auth().onAuthStateChanged(function(user) {
-	if (user) {
-	// User is signed in.
-	var displayName = user.displayName;
-	var email = user.email;
-	var emailVerified = user.emailVerified;
-	var photoURL = user.photoURL;
-	var isAnonymous = user.isAnonymous;
-	var uid = user.uid;
-	var providerData = user.providerData;
-	console.log(displayName + ' ' + email + ' '+  photoURL);
-	console.log(firebase.auth().currUser);
-	window.location = 'index_dashboard.html';
-} else {
-  console.log("no user logged in")
-// User is signed out.
-// ...
-}
-});
-</script>
+		firebase.auth().onAuthStateChanged(function(user) {
+			if (user && signin) {
+				// User is signed in.
+				console.log("user info", user);
+				
+			db = firebase.firestore();
+			var docRef = db.collection("users").doc(user.email);
+			docRef.get().then(function(doc) {
+			if (doc.exists) {
+				console.log("Document data:", doc.data());
+				window.location = 'index_dashboard.html'
+			} else {
+				// doc.data() will be undefined in this case
+				console.log("No such document!");
+				window.location = 'signup_page.html'
+			}
+			}).catch(function(error) {
+				console.log("Error getting document:", error);
+			});
+
+
+			} else {
+				console.log("no user logged in")
+				// User is signed out.
+				// ...
+			}
+		}); 
+	}
+	</script>
 </html>

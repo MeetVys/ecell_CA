@@ -12,6 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-analytics.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-firestore.js"></script>
 
 <script>
   // Your web app's Firebase configuration
@@ -51,7 +52,7 @@
         <div class="tab-pane active container" id="profile">
             <div class="row">
                 <div class="col-3">
-                    <img  src="images/pp.jpg" class="img-fluid rounded-circle float-left" alt="..." style="width:100%">
+                    <img  src="img/pp.png" id="photo" class="img-fluid rounded-circle float-left" alt="..." style="width:100%">
                 </div>
                 <div class = "col-1">
 
@@ -59,7 +60,7 @@
                 <div class="col">
                    <br>
                    <br>
-                    <p>Name:<span id = "name"></span> </p>
+                    <p>Name:<span id = "current_name"></span> </p>
                     <p>Email: <span id = "email"></span></p>
                     <p>: </p>
                     <button onclick="signout()">sign out</button>
@@ -76,7 +77,7 @@
                 </div>
                 <div class=" col-4">
                     <div class="text-center">
-                        <img src="images/radiant.jpg" class="img-fluid rounded-circle" style="width: 60%;"> 
+                        <img src="img/radiant.jpg" class="img-fluid rounded-circle" style="width: 60%;"> 
                     </div>
                 </div>
             </div>
@@ -112,12 +113,31 @@
 
         </div>
         <div class="tab-pane container" id="ranking">
-          <p>1. Meet the great the greatest Vyas</p>
-          <p>2. Meet the great Vyas</p>
-          <p>3. Meet vyas</p>
+          <table>
+            <col width="15%"><col width="60%"><col width="15%"><col width = "10%">
+            <thead class="highlight-cell"><th>position</th><th>name</th><th>college</th><th>points</th></thead>
+            <tbody id="list-table-body"></tbody>
+        
+            <tfoot class="empty-cell">
+              <td>
+              </td>
+              <td>
+              </td>
+              <td></td>
+              </td>
+              <td></td>
+            </tfoot>
+          </table>
         </div>
       </div>
-
+<!--       <div id="preloader">
+        <div class="preloader">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div> -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
@@ -126,16 +146,47 @@
       firebase.auth().onAuthStateChanged(function(user){
           if(user){
               console.log(user);
-              var name = document.getElementById("name")
+              var current_name = document.getElementById("current_name")
               var email = document.getElementById("email")
-
-              name.innerHTML = user.displayName;
+              var photo = document.getElementById("photo")
+              current_name.innerHTML = user.displayName;
               email.innerHTML = user.email;
+              photo.src = user.photoURL;
               
+              var db = firebase.firestore().collection('users');
+
+              db.orderBy("points","desc")
+              .get()
+              .then(function(querySnapshot) {
+                  const listTableBody = document.getElementById("list-table-body");
+
+                  // clear all the table rows first
+                  listTableBody.textContent = "";
+                  var position = 0;
+
+                  querySnapshot.forEach(function(doc) {
+                      // doc.data() is never undefined for query doc snapshots
+                      position = position + 1;
+                      user_pos= doc.data();
+                      console.log(user_pos.name);
+                      var row = document.createElement("tr");
+                      row.innerHTML = "<td>" + position + "</td><td>" + user_pos.name + "</td><td>" +
+                      user_pos.college
+                      + "</td>" + user_pos.points
+                      "<td></td>";
+
+                      listTableBody.append(row);
+                  });
+              })
+              .catch(function(error) {
+                  console.log("Error getting documents: ", error);
+              });
+
 
           }
           else{
-              document.body.innerHTML = '<h1>loading......</h1>'
+            window.location = 'index_CA.html';
+            alert('Authenciate yourself first!')
               console.log("no user signin")
           }
       })
