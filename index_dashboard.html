@@ -99,14 +99,13 @@
               <div class="tab-content">
                 <div class="tab-pane container active" id="current">
                   <div class="active" id="status1">
-                    <p>Everything is done!!!</p>
-                  </div>
+<!--                     <p id = "current_task">Everything is done!!!</p> -->                  </div>
                   <div class="d-none" id = "status2">
                     <p>awfqeowygficnwifgqyhfbyegdye gf</p>
                   </div>
                 </div>
                 <div class="tab-pane container fade" id="completed">
-                  <p> <strong>Task1 done: scored 29 points</strong></p>
+                  <!-- <p> <strong>Task1 done: scored 29 points</strong></p> -->
                   
                 </div>
                 </div> 
@@ -115,9 +114,7 @@
         <div class="tab-pane container" id="ranking">
           <table>
             <col width="15%"><col width="60%"><col width="15%"><col width = "10%">
-            <thead class="highlight-cell"><th>
-              
-            </th><th>Description</th><th>Resolved?</th><th>Delete</th></thead>
+            <thead class="highlight-cell"><th>position</th><th>name</th><th>college</th><th>points</th></thead>
             <tbody id="list-table-body"></tbody>
         
             <tfoot class="empty-cell">
@@ -154,9 +151,58 @@
               photo.src = user.photoURL;
               
               var db = firebase.firestore().collection('users');
+
               
+              db.orderBy("points","desc")
+              .get()
+              .then(function(querySnapshot) {
+                  const listTableBody = document.getElementById("list-table-body");
+
+                  // clear all the table rows first
+                  listTableBody.textContent = "";
+                  var position = 0;
+
+                  querySnapshot.forEach(function(doc) {
+                      // doc.data() is never undefined for query doc snapshots
+                      position = position + 1;
+                      user_pos= doc.data();
+                      console.log(user_pos.name);
+                      var row = document.createElement("tr");
+                      row.innerHTML = "<td>" + position + "</td><td>" + user_pos.name + "</td><td>" +
+                      user_pos.college
+                      + "</td>" + user_pos.points
+                      "<td></td>";
+
+                      listTableBody.append(row);
+                  });
+              })
+              .catch(function(error) {
+                  console.log("Error getting documents: ", error);
+              });
 
 
+              firebase.firestore().collection('users').doc(user.email).collection('current task')
+              .get().then((subCollectionSnapshot) => {
+              subCollectionSnapshot.forEach((subDoc) => {
+                var para = document.createElement("p");
+                var node = document.createTextNode(subDoc.data().description);
+                para.appendChild(node);
+
+                var element = document.getElementById("status1");
+                element.appendChild(para);
+              });  
+          });
+              firebase.firestore().collection('users').doc(user.email).collection('completed task')
+              .get().then((subCollectionSnapshot) => {
+              subCollectionSnapshot.forEach((subDoc) => {
+                var para = document.createElement("p");
+                var node = document.createTextNode(subDoc.data().description);
+                para.appendChild(node);
+
+                var element = document.getElementById("completed");
+                element.appendChild(para);
+              });  
+          });
 
           }
           else{
